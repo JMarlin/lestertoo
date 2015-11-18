@@ -1,0 +1,30 @@
+A NOTE ON INTERPOLATION
+
+It turns out that a simple way to interpolate any number of attributes(axes) over a set of
+integers against a value known to be stepping from its initial value to its final value by
+a step size of one (in the case of rasterization, the increasing scanline/Y value) is to
+simply run an independent inner loop of bresenham's algorithm for each independent
+attribute within an outer loop which counts from the minimum dependent(y) value to the
+maximum. In these independent loops, the y-axis should the y-axis but the x axis should 
+become the axis of whichever attribute is being interpolated, and that attribute should be
+stepped as such. The only other change to the inner bresenham loops is that they should
+break their loop in cases where they would update their y-value and maintain no y-value
+of their own. It is also possible, therefore, to remove any checks for completion in the
+inner loops as they are made redundant by the outer loop check.
+
+The caviat of this method is that the resultant values are extrema for a given value of the
+dependent, single-stepping axis and are therefore useless without a second stage of 
+interpolation. But they can be made useful for 2D raster scanning if two sets of these
+extrema, both having the same dependent step-value, are used as input to a second stage
+of interpolation which interpolates the attribute value along a useful orthogonal axis to
+the single-step axis to provide interpolation of the value across a quantized 2d surface.
+
+eg: 
+	while y < y_end
+		interpolate_raster(y, x_a, attribute_a, x_b, attribute_b)
+		inner_loop_for_attribute_along_line_a
+		inner_loop_for_attribute_along_line_b
+		inner_loop_for_x_along_line_a
+		inner_loop_for_x_along_line_b 
+		y++
+	wend
