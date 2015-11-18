@@ -109,18 +109,32 @@ rect* splitRect(SDL_Renderer* renderer, rect rdest, rect rknife, int* out_count)
 void drawOccluded(SDL_Renderer* renderer, rect baserect, rect* splitrects, int rect_count) {
 	
 	int split_count = 0;
-	int total_count = 0;
+	int total_count = 1;
 	rect* out_rects = (rect*)0;
 	int i;
 	
+	out_rects = (rect*)malloc(sizeof(rect));
+	out_rects[0].top = baserect.top;
+	out_rects[0].left = baserect.left;
+	out_rects[0].bottom = baserect.right;
+	out_rects[0].left = baserect.left;
+	
+	//For each splitting rect, split each rect in out_rects, delete the rectangle that was split, and add the resultant split rectangles
 	for(i = 0; i < rect_count; i++) {
 		
-		rect* split_rects = splitRect(renderer, baserect, splitrects[0], &split_count);
+		for(j = 0; j < total_count; j++) {
+			
+			rect* split_rects = splitRect(renderer, out_rects[j], splitrects[i], &split_count);
 		
-		if(!split_count)
-			continue;
-		
-		if(out_rect)
+			if(!split_count)
+				continue;
+			
+			if(out_rects) {
+				out_rects = (rect*)realloc(sizeof(rect) * (split_count + total_count));
+			} else {
+				out_rects = (rect*)malloc(sizeof(rect) * split_count);
+			}
+		}
 	}
 	
 	SDL_SetRenderDrawColor(renderer, 0xFF, 0x0, 0x0, 0xFF);
